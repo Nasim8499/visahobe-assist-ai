@@ -12,7 +12,7 @@ const formatBytes = (b: number) => {
 };
 
 export const KnowledgeBase = () => {
-  const { kbFiles, addKbFiles, removeKbFile, exportKbManifest } = useApp();
+  const { kbFiles, addKbFiles, removeKbFile, exportKbManifest, kbBusy } = useApp();
   const [activeFolder, setActiveFolder] = useState<string>("General");
   const [filter, setFilter] = useState<string>("All");
   const [drag, setDrag] = useState(false);
@@ -22,8 +22,7 @@ export const KnowledgeBase = () => {
 
   const handleFiles = (files: FileList | File[]) => {
     if (!files || (files as FileList).length === 0) return;
-    addKbFiles(files, activeFolder);
-    toast.success(`Added ${(files as FileList).length} file(s) to ${activeFolder}`);
+    void addKbFiles(files, activeFolder);
   };
 
   return (
