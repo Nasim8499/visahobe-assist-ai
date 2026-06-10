@@ -66,13 +66,13 @@ export const MyStuff = () => {
           <h2 className="mb-3 font-display text-sm font-semibold text-muted-foreground">Recent images</h2>
           <div className="grid grid-cols-3 gap-2 sm:grid-cols-6">
             {generatedImages.slice(0, 6).map((img) => (
-              <div
+              <img
                 key={img.id}
-                className="aspect-square rounded-xl"
-                style={{
-                  background: `linear-gradient(135deg, hsl(${img.hue} 80% 65%), hsl(${(img.hue + 60) % 360} 80% 55%), hsl(${(img.hue + 120) % 360} 75% 50%))`,
-                }}
+                src={img.imageUrl}
+                alt={img.prompt}
                 title={img.prompt}
+                loading="lazy"
+                className="aspect-square w-full rounded-xl border border-border object-cover"
               />
             ))}
           </div>

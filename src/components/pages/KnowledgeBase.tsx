@@ -1,9 +1,8 @@
 import { useRef, useState } from "react";
 import { PageWrap } from "@/components/pages/ChatHistory";
 import { Button } from "@/components/ui/button";
-import { Upload, Download, FileText, Trash2, FolderOpen } from "lucide-react";
+import { Upload, Download, FileText, Trash2, FolderOpen, Loader2 } from "lucide-react";
 import { useApp, KB_FOLDERS } from "@/contexts/AppContext";
-import { toast } from "sonner";
 
 const formatBytes = (b: number) => {
   if (b < 1024) return `${b} B`;
@@ -12,7 +11,7 @@ const formatBytes = (b: number) => {
 };
 
 export const KnowledgeBase = () => {
-  const { kbFiles, addKbFiles, removeKbFile, exportKbManifest } = useApp();
+  const { kbFiles, addKbFiles, removeKbFile, exportKbManifest, kbBusy } = useApp();
   const [activeFolder, setActiveFolder] = useState<string>("General");
   const [filter, setFilter] = useState<string>("All");
   const [drag, setDrag] = useState(false);
@@ -22,8 +21,7 @@ export const KnowledgeBase = () => {
 
   const handleFiles = (files: FileList | File[]) => {
     if (!files || (files as FileList).length === 0) return;
-    addKbFiles(files, activeFolder);
-    toast.success(`Added ${(files as FileList).length} file(s) to ${activeFolder}`);
+    void addKbFiles(files, activeFolder);
   };
 
   return (
@@ -44,7 +42,7 @@ export const KnowledgeBase = () => {
         <div className={"rounded-2xl bg-card p-8 text-center " + (drag ? "bg-accent/40" : "")}>
           <Upload className="mx-auto h-8 w-8 text-primary" />
           <p className="mt-3 font-display font-semibold">Drop files to upload</p>
-          <p className="mt-1 text-sm text-muted-foreground">PDF, DOCX, TXT, MD — stored locally as metadata</p>
+          <p className="mt-1 text-sm text-muted-foreground">TXT, MD, CSV, JSON are read & made queryable from the Assistant</p>
 
           <div className="mt-4 flex flex-wrap justify-center gap-2">
             <span className="text-xs text-muted-foreground self-center">Target folder:</span>
@@ -72,7 +70,10 @@ export const KnowledgeBase = () => {
               className="hidden"
               onChange={(e) => e.target.files && handleFiles(e.target.files)}
             />
-            <Button onClick={() => inputRef.current?.click()}>Choose files</Button>
+            <Button onClick={() => inputRef.current?.click()} disabled={kbBusy}>
+              {kbBusy && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              {kbBusy ? "Uploading…" : "Choose files"}
+            </Button>
             <Button variant="outline" onClick={exportKbManifest}>
               <Download className="mr-2 h-4 w-4" /> Export manifest
             </Button>
