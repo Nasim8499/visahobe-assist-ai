@@ -2,21 +2,19 @@ import { useState } from "react";
 import { PageWrap } from "@/components/pages/ChatHistory";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Sparkles, Trash2 } from "lucide-react";
-import { toast } from "sonner";
+import { Sparkles, Trash2, Loader2 } from "lucide-react";
 import { useApp } from "@/contexts/AppContext";
 
 const styles = ["Photoreal", "Cinematic", "Flat Illustration", "3D Render", "Minimal", "Editorial"];
 
 export const ImageGenerator = () => {
-  const { generatedImages, addGeneratedImage, removeGeneratedImage } = useApp();
+  const { generatedImages, generateImage, removeGeneratedImage, imageBusy } = useApp();
   const [prompt, setPrompt] = useState("");
   const [style, setStyle] = useState(styles[0]);
 
-  const handleGenerate = () => {
-    if (!prompt.trim()) return;
-    addGeneratedImage({ prompt: prompt.trim(), style });
-    toast.success("Image generated — saved to My Stuff");
+  const handleGenerate = async () => {
+    if (!prompt.trim() || imageBusy) return;
+    await generateImage(prompt.trim(), style);
     setPrompt("");
   };
 
@@ -29,6 +27,7 @@ export const ImageGenerator = () => {
             onChange={(e) => setPrompt(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && handleGenerate()}
             placeholder="A professional visa consultant helping a young couple, warm tones…"
+            disabled={imageBusy}
           />
           <div className="flex flex-wrap gap-2">
             {styles.map((s) => (
@@ -49,9 +48,10 @@ export const ImageGenerator = () => {
           <Button
             onClick={handleGenerate}
             className="bg-gradient-to-r from-blue to-violet text-primary-foreground"
-            disabled={!prompt.trim()}
+            disabled={!prompt.trim() || imageBusy}
           >
-            <Sparkles className="mr-2 h-4 w-4" /> Generate
+            {imageBusy ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Sparkles className="mr-2 h-4 w-4" />}
+            {imageBusy ? "Generating…" : "Generate"}
           </Button>
         </div>
       </div>
@@ -66,15 +66,10 @@ export const ImageGenerator = () => {
           </div>
         ) : (
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-            {generatedImages.slice(0, 8).map((img) => (
-              <div key={img.id} className="group relative aspect-square overflow-hidden rounded-2xl">
-                <div
-                  className="absolute inset-0"
-                  style={{
-                    background: `linear-gradient(135deg, hsl(${img.hue} 80% 65%), hsl(${(img.hue + 60) % 360} 80% 55%), hsl(${(img.hue + 120) % 360} 75% 50%))`,
-                  }}
-                />
-                <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent p-2">
+            {generatedImages.slice(0, 12).map((img) => (
+              <div key={img.id} className="group relative aspect-square overflow-hidden rounded-2xl border border-border">
+                <img src={img.imageUrl} alt={img.prompt} className="absolute inset-0 h-full w-full object-cover" loading="lazy" />
+                <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent p-2">
                   <p className="line-clamp-2 text-[11px] text-white">{img.prompt}</p>
                   <p className="text-[10px] text-white/70">{img.style}</p>
                 </div>
