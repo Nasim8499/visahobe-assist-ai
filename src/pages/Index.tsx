@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { ThemeProvider } from "@/contexts/ThemeContext";
+import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { AppProvider, useApp } from "@/contexts/AppContext";
+import { AuthPage } from "@/components/AuthPage";
 import { Header } from "@/components/Header";
 import { Sidebar } from "@/components/Sidebar";
 import { Assistant } from "@/components/pages/Assistant";
@@ -13,6 +15,7 @@ import { ImageGenerator } from "@/components/pages/ImageGenerator";
 import { CodeAssistant } from "@/components/pages/CodeAssistant";
 import { Analytics } from "@/components/pages/Analytics";
 import { Settings } from "@/components/pages/Settings";
+import { Loader2 } from "lucide-react";
 
 const Content = () => {
   const { page } = useApp();
@@ -49,11 +52,28 @@ const Shell = () => {
   );
 };
 
-const Index = () => (
-  <ThemeProvider>
+const Gate = () => {
+  const { user, loading } = useAuth();
+  if (loading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background">
+        <Loader2 className="h-6 w-6 animate-spin text-primary" />
+      </div>
+    );
+  }
+  if (!user) return <AuthPage />;
+  return (
     <AppProvider>
       <Shell />
     </AppProvider>
+  );
+};
+
+const Index = () => (
+  <ThemeProvider>
+    <AuthProvider>
+      <Gate />
+    </AuthProvider>
   </ThemeProvider>
 );
 
